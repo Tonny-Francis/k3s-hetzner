@@ -1,0 +1,64 @@
+# ========================================
+# Comandos para Setup do Cluster K3S
+# ========================================
+
+# 1. Gerar chave SSH para o cluster
+ssh-keygen -t ed25519 -C "k3s-hetzner" -f ~/.ssh/k3s-hetzner
+
+# 2. Exportar token da Hetzner Cloud
+export HCLOUD_TOKEN="seu_token_real_aqui"
+
+# 3. Criar o cluster K3S
+hetzner-k3s create --config k3s/cluster-config.yaml
+
+# 4. Verificar o cluster
+export KUBECONFIG="./k3s/kubeconfig"
+kubectl get nodes
+kubectl get pods -A
+
+# 5. Executar post-install (NGINX Ingress, Cert-Manager, etc)
+./post-install.sh
+
+# ========================================
+# Comandos úteis
+# ========================================
+
+# Ver informações do cluster
+kubectl cluster-info
+
+# Ver serviços e Load Balancers
+kubectl get svc -A
+
+# Ver ClusterIssuer
+kubectl get clusterissuer
+
+# Ver secret da Cloudflare
+kubectl get secret cloudflare-secret -n cert-manager -o jsonpath='{.data.api-key}' | base64 -d
+
+# Ver certificados
+kubectl get certificate -A
+
+# Ver logs do cert-manager
+kubectl logs -n cert-manager deployment/cert-manager -f
+
+# Ver logs do NGINX Ingress
+kubectl logs -n ingress-nginx deployment/ingress-nginx-controller -f
+
+# ========================================
+# Comandos de Manutenção
+# ========================================
+
+# Deletar o cluster (CUIDADO!)
+hetzner-k3s delete --config k3s/cluster-config.yaml
+
+# Upgrade do cluster
+hetzner-k3s upgrade --config k3s/cluster-config.yaml
+
+# Ver status dos nodes
+kubectl describe nodes
+
+# Drenar um node para manutenção
+kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+
+# Retornar node ao cluster
+kubectl uncordon <node-name>

@@ -1,0 +1,88 @@
+# 1 - Configuration basics for k3s cluster
+---
+cluster_name: k3s-production
+kubeconfig_path: "./kubeconfig"
+k3s_version: v1.35.0+k3s1
+
+# 2 - Configuration Network
+networking:
+  ssh:
+    port: 22
+    use_agent: false
+    public_key_path: "~/.ssh/k3s-hetzner.pub"
+    private_key_path: "~/.ssh/k3s-hetzner"
+  allowed_networks:
+    ssh:
+      - 0.0.0.0/0
+      - 10.0.0.0/16
+    api:
+      - 0.0.0.0/0
+      - 10.0.0.0/16
+  cni:
+    enabled: true
+    encryption: false
+    mode: flannel
+  private_network:
+    enabled: true
+    subnet: 10.0.0.0/16
+
+# 3 - Configuration Datastore
+datastore:
+  mode: etcd
+
+# 4 - Configuration Nodes Masters
+schedule_workloads_on_masters: false
+
+masters_pool:
+  instance_type: cx23
+  instance_count: 3
+  locations:
+    - nbg1
+    - nbg1
+    - nbg1
+
+# 5 - Configuration Nodes Workers
+worker_node_pools:
+  - name: tools
+    instance_type: cx33
+    instance_count: 2
+    location: nbg1
+    labels:
+      - key: node-role
+        value: tools
+      - key: ingress
+        value: allow 
+    
+  - name: resources  
+    instance_type: cx33
+    instance_count: 1
+    location: nbg1
+    labels:
+      - key: node-role
+        value: resources
+      - key: ingress
+        value: allow 
+
+# 6 - Configuration Addons
+addons:
+  csi_driver:
+    enabled: true
+  traefik:
+    enabled: false
+  servicelb:
+    enabled: false
+  metrics_server:
+    enabled: false
+  cluster_autoscaler:
+    enabled: false
+  cloud_controller_manager:
+    enabled: true
+  system_upgrade_controller:
+    enabled: true
+  embedded_registry_mirror:
+    enabled: false
+  
+# 7 - Configuration Security and Misc
+protect_against_deletion: false
+create_load_balancer_for_the_kubernetes_api: false
+k3s_upgrade_concurrency: 1
