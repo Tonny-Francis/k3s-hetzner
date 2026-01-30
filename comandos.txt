@@ -5,8 +5,13 @@
 # 1. Gerar chave SSH para o cluster
 ssh-keygen -t ed25519 -C "k3s-hetzner" -f ~/.ssh/k3s-hetzner
 
-# 2. Exportar token da Hetzner Cloud
-export HCLOUD_TOKEN="seu_token_real_aqui"
+# 2. Configurar credenciais (OBRIGATÓRIO antes de criar o cluster)
+export HCLOUD_TOKEN="seu_token_hetzner_aqui"
+
+# Para backup S3 do etcd (opcional mas recomendado):
+export ETCD_S3_ENDPOINT="https://fsn1.your-objectstorage.com"
+export ETCD_S3_ACCESS_KEY="seu_access_key"
+export ETCD_S3_SECRET_KEY="seu_secret_key"
 
 # 3. Criar o cluster K3S
 hetzner-k3s create --config k3s/cluster-config.yaml
@@ -16,49 +21,62 @@ export KUBECONFIG="./k3s/kubeconfig"
 kubectl get nodes
 kubectl get pods -A
 
-# 5. Executar post-install (NGINX Ingress, Cert-Manager, etc)
+# 5. Executar post-install (NGINX Ingress, Cert-Manager, Rancher)
+chmod +x post-install.sh
 ./post-install.sh
 
 # ========================================
-# Comandos úteis
+# Comandos Úteis
 # ========================================
 
 # Ver informações do cluster
 kubectl cluster-info
+kubectl get nodes -o wide
+kubectl get pods -A
 
 # Ver serviços e Load Balancers
 kubectl get svc -A
 
-# Ver ClusterIssuer
+# Ver ClusterIssuer e certificados
 kubectl get clusterissuer
+kubectl get certificate -A
 
 # Ver secret da Cloudflare
 kubectl get secret cloudflare-secret -n cert-manager -o jsonpath='{.data.api-key}' | base64 -d
 
-# Ver certificados
-kubectl get certificate -A
-
-# Ver logs do cert-manager
+# Ver logs
 kubectl logs -n cert-manager deployment/cert-manager -f
-
-# Ver logs do NGINX Ingress
 kubectl logs -n ingress-nginx deployment/ingress-nginx-controller -f
 
 # ========================================
-# Comandos de Manutenção
+# Backup e Restauração do etcd
 # ========================================
 
-# Deletar o cluster (CUIDADO!)
+# Ver snapshots locais do etcd (backup automático a cada 6h)
+ssh root@<master-ip> "ls -lht /var/lib/rancher/k3s/server/db/snapshots/ | head -10"
+
+# Backups também são enviados automaticamente para S3 (se configurado)
+
+# Restaurar snapshot do etcd (DESASTRE - último recurso)
+# 1. No master principal:
+ssh root@<master-ip> "k3s server --cluster-reset --cluster-reset-restore-path=/var/lib/rancher/k3s/server/db/snapshots/<snapshot-name>"
+# 2. Recriar o cluster a partir do snapshot
+
+# ========================================
+# Manutenção do Cluster
+# ========================================
+
+# Upgrade do cluster (aplicar nova versão K3s ou mudanças no config)
+hetzner-k3s upgrade --config k3s/cluster-config.yaml --new-k3s-version v1.31.4+k3s1
+
+# Deletar o cluster (CUIDADO! - protect_against_deletion=true vai impedir)
 hetzner-k3s delete --config k3s/cluster-config.yaml
 
-# Upgrade do cluster
-hetzner-k3s upgrade --config k3s/cluster-config.yaml
-
-# Ver status dos nodes
-kubectl describe nodes
-
-# Drenar um node para manutenção
+# Drenar node para manutenção
 kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
 
 # Retornar node ao cluster
 kubectl uncordon <node-name>
+
+# Ver recursos dos nodes
+kubectl describe node <node-name> | grep -A 10 "Allocatable"

@@ -29,6 +29,20 @@ networking:
 # 3 - Configuration Datastore
 datastore:
   mode: etcd
+  etcd:
+    # Snapshot configuration
+    snapshot_retention: 24
+    snapshot_schedule_cron: "0 */6 * * *"
+    
+    # S3 backup configuration (configure as credenciais via variáveis de ambiente)
+    s3_enabled: true
+    s3_region: "fsn1"
+    s3_bucket: "k3s-production-backups"
+    s3_folder: "etcd-snapshots"
+    # Defina antes de criar o cluster:
+    # export ETCD_S3_ENDPOINT="https://fsn1.your-objectstorage.com"
+    # export ETCD_S3_ACCESS_KEY="seu_access_key"
+    # export ETCD_S3_SECRET_KEY="seu_secret_key"
 
 # 4 - Configuration Nodes Masters
 schedule_workloads_on_masters: false
@@ -91,6 +105,16 @@ kubelet_args:
   - "--eviction-soft-grace-period=memory.available=1m30s,nodefs.available=2m"
   - "--enforce-node-allocatable=pods"
 
-protect_against_deletion: false
+additional_packages:
+  - curl
+  - htop
+  - iotop
+  - vim
+
+additional_post_k3s_commands:
+  - apt autoremove -y
+  - apt clean
+
+protect_against_deletion: true
 create_load_balancer_for_the_kubernetes_api: false
 k3s_upgrade_concurrency: 1
