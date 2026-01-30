@@ -1,1 +1,28 @@
+# Logs
 create.log
+*.log
+
+# Kubeconfig (SENSÍVEL - Contém credenciais do cluster)
+kubeconfig
+**/kubeconfig
+k3s/kubeconfig
+
+# Secrets e tokens
+*.secret
+.env
+.env.*
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Terraform (se usar no futuro)
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# OS
+.DS_Store
+Thumbs.db
