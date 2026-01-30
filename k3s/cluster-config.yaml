@@ -1,7 +1,7 @@
 # 1 - Configuration basics for k3s cluster
 ---
 cluster_name: k3s-production
-kubeconfig_path: "./kubeconfig"
+kubeconfig_path: "./k3s/kubeconfig"
 k3s_version: v1.35.0+k3s1
 
 # 2 - Configuration Network
