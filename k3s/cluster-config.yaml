@@ -83,6 +83,14 @@ addons:
     enabled: false
   
 # 7 - Configuration Security and Misc
+kubelet_args:
+  - "--system-reserved=cpu=100m,memory=128Mi,ephemeral-storage=512Mi"
+  - "--kube-reserved=cpu=100m,memory=128Mi,ephemeral-storage=512Mi"
+  - "--eviction-hard=memory.available<128Mi,nodefs.available<5%"
+  - "--eviction-soft=memory.available<256Mi,nodefs.available<10%"
+  - "--eviction-soft-grace-period=memory.available=1m30s,nodefs.available=2m"
+  - "--enforce-node-allocatable=pods"
+
 protect_against_deletion: false
 create_load_balancer_for_the_kubernetes_api: false
 k3s_upgrade_concurrency: 1

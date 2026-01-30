@@ -20,7 +20,7 @@ Infraestrutura como código para provisionar um cluster Kubernetes (K3s) altamen
   - `tools`: 2 nodes (CX33) - 4 vCPUs, 8 GB RAM, 80 GB SSD - Ingress e ferramentas
   - `resources`: 1 node (CX33) - 4 vCPUs, 8 GB RAM, 80 GB SSD - Aplicações
 
-**Total**: 6 nodes | 24 vCPUs | 72 GB RAM | 640 GB SSD
+**Total**: 6 nodes | 14 vCPUs | 36 GB RAM | 280 GB SSD
 
 ### Componentes Instalados
 - **K3s**: v1.35.0+k3s1

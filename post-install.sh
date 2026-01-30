@@ -71,4 +71,26 @@ else
   sed "s/YOUR_EMAIL/$EMAIL/g" cert-manager/clusterIssuer.yaml | kubectl apply -f -
   echo "✅ ClusterIssuer configurado!"
 fi
+
+# Rancher Import
+echo ""
+read -p "🐮 Deseja importar este cluster no Rancher? (s/N): " RANCHER_IMPORT
+if [[ "$RANCHER_IMPORT" =~ ^[sS]$ ]]; then
+  echo "🔧 Importando cluster no Rancher..."
+  echo "ℹ️  Acesse o Rancher e copie a URL de importação do cluster"
+  echo "ℹ️  Exemplo: https://rancher.example.com/v3/import/xxxxx.yaml"
+  read -p "Cole a URL do YAML de importação: " RANCHER_URL
+  
+  if [[ -n "$RANCHER_URL" ]]; then
+    echo "🔧 Aplicando manifesto do Rancher..."
+    kubectl apply -f "$RANCHER_URL"
+    echo "✅ Cluster importado no Rancher!"
+    echo "ℹ️  Aguarde alguns minutos para o cluster aparecer no Rancher"
+  else
+    echo "⚠️  URL não fornecida. Pulando importação do Rancher."
+  fi
+else
+  echo "⏭️  Pulando importação do Rancher..."
+fi
+
 echo "🎉 Post-install concluído!"
