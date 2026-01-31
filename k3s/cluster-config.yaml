@@ -34,7 +34,7 @@ datastore:
   etcd:
     # Snapshot configuration
     snapshot_retention: 24
-    snapshot_schedule_cron: "0 */6 * * *"
+    snapshot_schedule_cron: "0 */2 * * *"
     
     # S3 backup configuration - AWS S3 Free Tier (5GB)
     s3_enabled: true
