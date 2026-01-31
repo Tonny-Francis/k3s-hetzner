@@ -13,18 +13,20 @@ networking:
     private_key_path: "~/.ssh/k3s-hetzner"
   allowed_networks:
     ssh:
-      - 0.0.0.0/0
-      - 10.0.0.0/16
+      - 0.0.0.0/0  # Temporário: acesso total para criar cluster
     api:
-      - 0.0.0.0/0
-      - 10.0.0.0/16
+      - 0.0.0.0/0  # Temporário: acesso total para criar cluster
+  public_network:
+    ipv4: true  # Temporário para criação do cluster
+    ipv6: false
   cni:
     enabled: true
     encryption: false
     mode: flannel
   private_network:
     enabled: true
-    subnet: 10.0.0.0/16
+    subnet: 10.0.0.0/24
+    existing_network_name: "k3s-production"  # Nome da rede privada já criada na Hetzner
 
 # 3 - Configuration Datastore
 datastore:
@@ -36,11 +38,11 @@ datastore:
     
     # S3 backup configuration (configure as credenciais via variáveis de ambiente)
     s3_enabled: true
-    s3_region: "fsn1"
-    s3_bucket: "k3s-production-backups"
+    s3_region: "nbg1"
+    s3_bucket: "k3s-production"
     s3_folder: "etcd-snapshots"
     # Defina antes de criar o cluster:
-    # export ETCD_S3_ENDPOINT="https://fsn1.your-objectstorage.com"
+    # export ETCD_S3_ENDPOINT="https://nbg1.your-objectstorage.com"
     # export ETCD_S3_ACCESS_KEY="seu_access_key"
     # export ETCD_S3_SECRET_KEY="seu_secret_key"
 
