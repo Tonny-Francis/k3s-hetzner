@@ -1,0 +1,64 @@
+# =====================================================
+# INSTALAÇÃO DOS WORKLOADS - K3S PRODUCTION
+# =====================================================
+
+# -----------------------------------------------------
+# PROMETHEUS + GRAFANA STACK
+# -----------------------------------------------------
+# Adicionar repositório
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Instalar/Atualizar com valores customizados
+helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  --values prometheus.yaml \
+  --wait
+
+# Expor na rede privada (NodePort 30090)
+kubectl apply -f prometheus-nodeport.yaml
+
+# Verificar
+kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus
+kubectl get svc -n monitoring prometheus-external
+
+# -----------------------------------------------------
+# LOKI + PROMTAIL
+# -----------------------------------------------------
+# Adicionar repositório
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+# Instalar/Atualizar com valores customizados
+helm upgrade --install loki grafana/loki \
+  --namespace monitoring \
+  --values loki.yaml \
+  --wait
+
+# Expor na rede privada (NodePort 30100)
+kubectl apply -f loki-nodeport.yaml
+
+# Verificar
+kubectl get pods -n monitoring -l app.kubernetes.io/name=loki
+kubectl get svc -n monitoring loki-external
+
+# =====================================================
+# DATASOURCES GRAFANA
+# =====================================================
+# Acesse: https://grafana.yourdomain.com
+# Configuration → Data Sources → Add data source
+#
+# Prometheus:
+#   URL: http://10.0.0.3:30090
+#   Access: Server (default)
+#
+# Loki:
+#   URL: http://10.0.0.3:30100
+#   Access: Server (default)
+#
+# Dashboards recomendados:
+#   - 315    (Kubernetes Cluster Monitoring)
+#   - 1860   (Node Exporter Full)
+#   - 13639  (Loki Logs)
+# =====================================================

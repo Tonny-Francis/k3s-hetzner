@@ -1,0 +1,140 @@
+fullnameOverride: prometheus
+
+# --------------------------
+# Alertmanager
+# --------------------------
+alertmanager:
+  fullnameOverride: alertmanager
+  enabled: true
+  ingress:
+    enabled: false
+  alertmanagerSpec:
+    nodeSelector:
+      node-role: tools
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+# --------------------------
+# Prometheus Operator
+# --------------------------
+prometheusOperator:
+  enabled: true
+  nodeSelector:
+    node-role: tools
+  prometheusConfigReloader:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 50Mi
+      limits:
+        cpu: 50m
+        memory: 100Mi
+
+# --------------------------
+# Prometheus principal
+# --------------------------
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 1
+    nodeSelector:
+      node-role: tools
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 25m
+        memory: 50Mi
+    retention: 168h
+    enableAdminAPI: true
+    walCompression: true
+    service:
+      type: NodePort
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: hcloud-volumes
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+# --------------------------
+# Node Exporter
+# --------------------------
+nodeExporter:
+  enabled: true
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        regex: (.*)
+        replacement: $1
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: kubernetes_node
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 20m
+    limits:
+      memory: 128Mi
+      cpu: 50m
+
+# --------------------------
+# Kube State Metrics
+# --------------------------
+kube-state-metrics:
+  enabled: true
+  nodeSelector:
+    node-role: tools
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 100m
+  selfMonitor:
+    enabled: true
+  prometheus:
+    monitor:
+      enabled: true
+
+# --------------------------
+# Kubelet Metrics
+# --------------------------
+kubelet:
+  enabled: true  # ESSENCIAL para métricas de CPU/RAM dos seus workloads
+
+# --------------------------
+# Extras desativados
+# --------------------------
+grafana:
+  enabled: false
+
+thanosRuler:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
